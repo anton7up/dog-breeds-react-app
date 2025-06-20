@@ -1,60 +1,41 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { BreedContext } from '../context/BreedContext';
 
-export const BreedContext = createContext();
-
-export function BreedProvider({ children }) {
-  const [breeds, setBreeds] = useState([]);
-  const [selectedBreed, setSelectedBreed] = useState(null);
-  const [breedImage, setBreedImage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);  // <-- новое состояние
+export default function BreedDetail() {
+  const { selectedBreed, setSelectedBreed } = useContext(BreedContext);
+  const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchBreeds() {
-      setIsLoading(true);
+    if (!selectedBreed) return;
+
+    async function fetchImage() {
+      setLoading(true);
       try {
-        const res = await fetch('https://dog.ceo/api/breeds/list/all');
+        const res = await fetch(`https://dog.ceo/api/breed/${selectedBreed}/images/random`);
         const data = await res.json();
-        setBreeds(Object.keys(data.message));
+        setImage(data.message);
         setError(null);
-      } catch (err) {
-        setError('Ошибка загрузки пород собак.');
+      } catch {
+        setError('Ошибка загрузки изображения');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     }
-    fetchBreeds();
-  }, []);
+    fetchImage();
+  }, [selectedBreed]);
 
-  async function selectBreed(breed) {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`https://dog.ceo/api/breed/${breed}/images/random`);
-      const data = await res.json();
-      setSelectedBreed(breed);
-      setBreedImage(data.message);
-      setError(null);
-    } catch {
-      setError('Ошибка при загрузке изображения породы.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  if (!selectedBreed) return null;
 
   return (
-    <BreedContext.Provider
-      value={{
-        breeds,
-        selectedBreed,
-        breedImage,
-        selectBreed,
-        setSelectedBreed,
-        isLoading,
-        error,
-        setError
-      }}
-    >
-      {children}
-    </BreedContext.Provider>
+    <div>
+      <h2>{selectedBreed}</h2>
+      {loading && <p>Загрузка изображения...</p>}
+      {error && <p>{error}</p>}
+      {image && <img src={image} alt={`Порода ${selectedBreed}`} width="400" />}
+      <br />
+      <button onClick={() => setSelectedBreed(null)}>Назад к списку</button>
+    </div>
   );
 }
