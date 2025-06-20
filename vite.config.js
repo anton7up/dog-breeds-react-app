@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';  // <-- добавь этот импорт
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  base: '/dog-breeds-app-react-app/',  // Имя твоего репозитория
+  base: '/dog-breeds-react-app/',
   plugins: [react()]
-});
+})
